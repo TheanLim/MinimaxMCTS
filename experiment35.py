@@ -99,20 +99,28 @@ def utilityMNK(state:MNK, depth:int):
   # Its a minimizer at odd depth
   return -utility if depth%2==1 else utility
 
-def limitedRandomRollout(state):
-  '''
-  Randomly rollout two actions and then score the resulting state using heuristic
-  '''
-  # Assume the MCTS agent is "O"
-  sign = 0 if state.getCurrentPlayerSign() == "O" else 1
-  depth = 1
-  while not state.isTerminal() and depth<=2:
-    actions = state.getActions()
-    action = random.choice(actions)
-    state = state.takeAction(action)
-    depth +=1
-  score = utilityMNK(state, sign)
-  return (-score, score)
+class limitedRandomRollout:
+  def __init__(self,utilityIdx:int = 0):
+    self.utilityIdx = utilityIdx
+  def __call__(self, state):
+    '''
+    Starting from the provided state, randomly take actions
+    until the terminal state. 
+    Returns the terminal state utility.
+    '''
+    sign = 0 if state.getCurrentPlayerSign() == "O" else 1
+    depth = 1
+    while not state.isTerminal() and depth<=2:
+      actions = state.getActions()
+      action = random.choice(actions)
+      state = state.takeAction(action)
+      depth +=1
+    score = utilityMNK(state, sign)
+    if self.utilityIdx == 0:
+      return (score, -score)
+    else:
+      return (-score, score)
+
 
 ###### START OF EXPERIMENT #####
 mnRanges = range(8, 16)
@@ -122,7 +130,7 @@ for m in mnRanges:
     # ONE row per m-k combination
     mkRes = []
     for n in mnRanges:
-      for t in [3, 5]:
+      for t in [0.3, 0.5]:
         if n<m: 
           print("n<m", n, m)
           mkRes.append(-9999)
@@ -138,7 +146,7 @@ for m in mnRanges:
         TTT = MNK(m,n,kVal, ["X", "O"])
         # Initialize agents
         agent1 = MinimaxIDS(time=t, maxDepth = 15, evaluationFunction=utilityMNK, expansionPolicy=cacheExpansion, toCache=True) #It is "X"
-        agent2 = MCTS(UCB(utilityIdx = [1]), linearExpansion, limitedRandomRollout, sumTuple, utilityIdx=[1]) # It is "O"
+        agent2 = MCTS(UCB(utilityIdx = [1]), linearExpansion, limitedRandomRollout(1), sumTuple, utilityIdx=[1]) # It is "O"
         agents = [agent1, agent2]
         agentKwargs=[{},{'maxTimeSec':lambda:t}]
         # StartGame
@@ -152,7 +160,7 @@ for m in mnRanges:
         print(m, n, kVal, t, "MCTS Starts")
         # Create a Tic Tac Toe Game State
         TTT = MNK(m,n,kVal, ["O", "X"])
-        agent1 = MCTS(UCB(utilityIdx = [0]), linearExpansion, limitedRandomRollout, sumTuple, utilityIdx=[0]) # It is "O"
+        agent1 = MCTS(UCB(utilityIdx = [0]), linearExpansion, limitedRandomRollout(0), sumTuple, utilityIdx=[0]) # It is "O"
         agent2 = MinimaxIDS(time=t, maxDepth = 15, evaluationFunction=utilityMNK, expansionPolicy=cacheExpansion, toCache=True) #It is "X"
         agents = [agent1, agent2]
         agentKwargs=[{'maxTimeSec':lambda:t}, {}]
@@ -174,13 +182,13 @@ for m in mnRanges:
 
 ### Save Results ###
 import pickle
-with open("test35.pkl", "wb") as f:
+with open("test35_2.pkl", "wb") as f:
     pickle.dump(res, f)
 
 '''
 import pickle
 # To read back
-with open("test35.pkl", "rb") as f:
+with open("test35_2.pkl", "rb") as f:
     res = pickle.load(f)
 '''
 
@@ -214,6 +222,6 @@ plt.xlabel("N")
 plt.ylabel("M",rotation=0)
 axis.grid(which="minor", linestyle='-', color = "black")
 plt.grid(linestyle=':', color = "black")
-plt.savefig("heatmap.png")
+plt.savefig("heatmap_2.png")
 plt.show()
 ### End Plotting ###

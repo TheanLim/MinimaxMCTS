@@ -110,7 +110,7 @@ class MCTS(Search):
     
     # If the search doesn't give any action, choose the first available action as the default
     if not action:
-      action = self.expansionPolicy(state)
+      action = self.expansionPolicy(state)[0]
       print("Fail to search for an action - return the first possible action found.")
     #print("Player take", state.getCurrentPlayerSign(), " action ", action)
     return action
@@ -125,7 +125,7 @@ class MCTS(Search):
       ########## Select the Best Action in this iteration #######
       ########## Select the best action based on its expected utilities ##########
       if not self.root.children: continue
-      bestExpectedUtilities, bestActions = float("-inf"), []
+      bestExpectedUtilities, bestActions = float('-inf'), []
       epsilon = 0.00001 # Prevent numeric overflow
       # The sequence of action follows the expansion policy used
       for action, child in self.root.children.items():
@@ -140,7 +140,6 @@ class MCTS(Search):
           bestExpectedUtilities = expectedUtilities
         elif expectedUtilities==bestExpectedUtilities:
           bestActions.append(action)
-
       action = self.breakTies(bestActions)
       queueOfActions.put(action)
       ####### End Selecting the Best Action in this iteration #######
@@ -256,7 +255,7 @@ class UCB:
     self.breakTies =breakTies
   
   def __call__(self, node:Node, depth:int)->Node:
-    bestUCB, bestChildNodes = float("-inf"), []
+    bestUCB, bestChildNodes = float('-inf'), []
     epsilon = 0.00001
     
     # The sequence of action follows the expansion policy used
@@ -274,6 +273,7 @@ class UCB:
         else:
           childUtilities = sum(child.utilities)
       
+      #childUtilities = abs(childUtilities)
       childExpectedUtility = childUtilities / (child.numVisits+epsilon)
       ucb = childExpectedUtility + self.explorationConstant * math.sqrt(math.log(node.numVisits)/(child.numVisits+epsilon))
       if ucb>bestUCB:
