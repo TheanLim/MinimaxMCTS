@@ -130,7 +130,7 @@ for m in mnRanges:
     # ONE row per m-k combination
     mkRes = []
     for n in mnRanges:
-      for t in [0.3, 0.5]:
+      for t in [3, 5]:
         if n<m: 
           print("n<m", n, m)
           mkRes.append(-9999)
@@ -182,13 +182,13 @@ for m in mnRanges:
 
 ### Save Results ###
 import pickle
-with open("test35_2.pkl", "wb") as f:
+with open("test35.pkl", "wb") as f:
     pickle.dump(res, f)
 
 '''
 import pickle
 # To read back
-with open("test35_2.pkl", "rb") as f:
+with open("test35.pkl", "rb") as f:
     res = pickle.load(f)
 '''
 
@@ -222,6 +222,6 @@ plt.xlabel("N")
 plt.ylabel("M",rotation=0)
 axis.grid(which="minor", linestyle='-', color = "black")
 plt.grid(linestyle=':', color = "black")
-plt.savefig("heatmap_2.png")
+plt.savefig("heatmap.png")
 plt.show()
 ### End Plotting ###
